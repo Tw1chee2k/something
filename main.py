@@ -1,28 +1,25 @@
-from typing import Annotated, Optional
-from fastapi import Depends, FastAPI, HTTPException
-from pydantic import BaseModel
-
-app = FastAPI()
-
-tasks = []
-
-class StaskAdd(BaseModel):
-    name: str
-    description: Optional[str] | None
-
-class STask(BaseModel):
-    id: int
+from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from database import create_tables, delete_tables
+from router import router as task_router
 
 
-# @app.get("/tasks")
-# def get_tasks():
-#     task = STask(name = "Запиши это видео")
-#     return {"data": task}
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await delete_tables()
+    print("Database droped")
+    await create_tables()
+    print("Database created")
+    yield
+    print("End")
 
-@app.post("/tasks")
-async def add_task(
-    task: Annotated[StaskAdd, Depends()],
-):
-    tasks.append(tasks)
-    return {"ok": True}
+app = FastAPI(lifespan=lifespan)
+app.include_router(task_router)
+
+
+
+
+
+
 
